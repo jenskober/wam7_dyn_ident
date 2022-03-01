@@ -253,20 +253,22 @@ def regr_matrices( dof, parm_num, q, dq, ddq, tau, regr_func):
 
 
 import sympybotics as spb
+from sympybotics._compatibility_ import exec_
 
 def gen_regr_matrices(rbt, q, dq, ddq, tau):
+  l = locals()
+  exec_(spb.robot_code_to_func('python', rbt.H_code, 'H', 'regressor_func', rbt.rbtdef), globals(), l)
+  regressor_func = l['regressor_func']
+  global sin, cos, sign
+  sin = numpy.sin
+  cos = numpy.cos
+  sign = numpy.sign
+  
+  H_S, omega = regr_matrices( rbt.dof, rbt.dyn.n_dynparms, q, dq, ddq, tau, regressor_func )
+  W = numpy.matrix(H_S[:,rbt.dyn.base_idxs])
+  
+  Q1,R1 = numpy.linalg.qr(W)
+  rho1 = Q1.T*omega
+  del H_S
 
-    exec spb.robot_code_to_func( 'python', rbt.H_code, 'H', 'regressor_func', rbt.rbtdef)
-    global sin, cos, sign
-    sin = numpy.sin
-    cos = numpy.cos
-    sign = numpy.sign
-    
-    H_S, omega = regr_matrices( rbt.dof, rbt.dyn.n_dynparms, q, dq, ddq, tau, regressor_func )
-    W = numpy.matrix(H_S[:,rbt.dyn.base_idxs])
-   
-    Q1,R1 = numpy.linalg.qr(W)
-    rho1 = Q1.T*omega
-    del H_S
-
-    return W, omega, Q1, R1, rho1
+  return W, omega, Q1, R1, rho1
