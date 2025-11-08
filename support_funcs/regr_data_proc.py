@@ -183,7 +183,7 @@ def regr_matrices( dof, parm_num, q, dq, ddq, tau, regr_func):
     H_S[ i*dof : i*dof+dof , : ] = numpy.array( regr_func( q[i], dq[i], ddq[i] ) ).reshape(dof,parm_num)
 
   for i in range(sn):
-      tau_S[ i*dof : i*dof+dof ] = numpy.mat( tau[i] ).T
+      tau_S[ i*dof : i*dof+dof ] = numpy.asmatrix( tau[i] ).T
 
   return H_S,tau_S
 
